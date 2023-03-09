@@ -1,12 +1,24 @@
-function constructBlooket(){
-    let questionArray = [];
-    let answerArray = [];
-    let textVariable = "";
+let dropdownSelected;
+let textVariable = "";
+let questionArray = [];
+let answerArray = [];
+let textArray;
+function initConstruct(){
+    answerArray = [];
+    questionArray = [];
     textVariable = document.getElementById("forminput").value;
-    console.log(textVariable)
-    textVariable.replace(" ", "");
-    let textArray = textVariable.split("\n")
-    console.log(textArray)
+    textArray = textVariable.split("\n");
+    dropdownSelected = document.getElementById("defaultdropdown").value
+    if (dropdownSelected === "english"){
+        dropdownEnglish();
+        constructBlooket();
+    } else if (dropdownSelected === "none") {
+        dropdownNone();
+        constructBlooket();
+    }
+}
+
+function dropdownNone(){
     //fills the question and answer arrays
     for (i=0; i<textArray.length; i++){
         if(i%2 === 0){
@@ -15,9 +27,30 @@ function constructBlooket(){
             answerArray.push(textArray[i])
         }
     }
-    console.log(questionArray)
-    console.log(answerArray)
-    //creates the questions using wrongs
+}
+
+function dropdownEnglish(){
+    let apiCall;
+    let apiResponse;
+    for (i=0; i<textArray.length; i++){
+        questionArray.push(textArray[i])
+        apiCall = fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + textArray[i])
+        apiCall.then(response => apiResponse = response);
+        let defineArray = [];
+        definArray = [];
+        let definition;
+        getDefinitions();
+        function getDefinitions(){
+            for (let i = 0; i<apiCall[0]["meanings"].length; i++){
+                defineArray.push(apiResponse[0]["meanings"][i]["definitions"][0]["definition"])
+            }
+            definition = defineArray[0]
+            answerArray.push(definition);
+        }
+    }
+}
+
+function constructBlooket(){
     let currentQuestion;
     let currentAnswer;
     let wrongOne;
@@ -38,7 +71,7 @@ function constructBlooket(){
     //where we put the csv on the screen
     finalQuestionAnswer.unshift('"Blooket' +"<br>" + 'Import Template",,,,,,,' + "<br>" +  'Question #,Question Text,Answer 1,Answer 2,"Answer 3' + "<br>" + '(Optional)","Answer 4' + "<br>" + '(Optional)","Time Limit (sec)' + "<br>" + '(Max: 300 seconds)","Correct Answer(s)' + "<br>" + '(Only include Answer #)"' + "<br>")
     finalQuestionAnswer = finalQuestionAnswer.join("")
-    document.getElementById("outputarea").innerHTML = finalQuestionAnswer;
+    document.getElementById("outputarea").innerText = finalQuestionAnswer;
     const csvBlob = new Blob([finalQuestionAnswer], {type:"text/csv"});
     const downloadLink = document.createElement("a");
     downloadLink.download = "myCSVFile.csv";
@@ -47,7 +80,6 @@ function constructBlooket(){
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
-    console.log(finalQuestionAnswer)
     //function to make wrong answers
     function checkWrongs() {
         if (wrongOne == wrongTwo || wrongTwo == wrongThree || wrongOne == wrongThree || currentAnswer == wrongOne || currentAnswer == wrongTwo || currentAnswer == wrongThree) {
