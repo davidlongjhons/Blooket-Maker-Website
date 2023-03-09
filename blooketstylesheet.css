@@ -18,4 +18,5 @@ textarea {
 p {
     border: red 1px solid;
     min-height: 10px;
+    overflow: scroll;
 }

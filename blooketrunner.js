@@ -2,7 +2,7 @@ function constructBlooket(){
     let questionArray = [];
     let answerArray = [];
     let textVariable = "";
-    textVariable = document.getElementById("forminput").innerHTML;
+    textVariable = document.getElementById("forminput").value;
     console.log(textVariable)
     textVariable.replace(" ", "");
     let textArray = textVariable.split("\n")
@@ -35,9 +35,18 @@ function constructBlooket(){
         makeQuestion(currentQuestion, currentAnswer, wrongOne, wrongTwo, wrongThree)
         finalQuestionAnswer.push(finalQA)
     }
-    console.log(finalQuestionAnswer)
     //where we put the csv on the screen
+    finalQuestionAnswer.unshift('"Blooket' +"<br>" + 'Import Template",,,,,,,' + "<br>" +  'Question #,Question Text,Answer 1,Answer 2,"Answer 3' + "<br>" + '(Optional)","Answer 4' + "<br>" + '(Optional)","Time Limit (sec)' + "<br>" + '(Max: 300 seconds)","Correct Answer(s)' + "<br>" + '(Only include Answer #)"' + "<br>")
     finalQuestionAnswer = finalQuestionAnswer.join("")
+    document.getElementById("outputarea").innerHTML = finalQuestionAnswer;
+    const csvBlob = new Blob([finalQuestionAnswer], {type:"text/csv"});
+    const downloadLink = document.createElement("a");
+    downloadLink.download = "myCSVFile.csv";
+    downloadLink.href = URL.createObjectURL(csvBlob);
+    downloadLink.dataset.downloadurl = ["text/csv", downloadLink.download, downloadLink.href].join(":");
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
     console.log(finalQuestionAnswer)
     //function to make wrong answers
     function checkWrongs() {
@@ -56,8 +65,7 @@ function constructBlooket(){
     //function to add a new question
     function makeQuestion(questionText, correctAnswer, wrongOne, wrongTwo, wrongThree){
         questionNumber += 1;
-        finalQuestionAnswer[0] = '"Blooket' +"\n" + 'Import Template",,,,,,,' + "\n" +  'Question #,Question Text,Answer 1,Answer 2,"Answer 3' + "\n" + '(Optional)","Answer 4' + "\n" + '(Optional)","Time Limit (sec)' + "\n" + '(Max: 300 seconds)","Correct Answer(s)' + "\n" + '(Only include Answer #)"' + "\n"
-        finalQA = questionNumber + comma + questionText + comma + correctAnswer + comma + wrongOne + comma + wrongTwo + comma + wrongThree + comma + "20,1" + "\n"
+        finalQA = questionNumber + comma + questionText + comma + correctAnswer + comma + wrongOne + comma + wrongTwo + comma + wrongThree + comma + "20,1" + "<br>"
     }
     function randNum() {
         return Math.floor(Math.random() * questionArray.length)
