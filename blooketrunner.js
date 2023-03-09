@@ -9,6 +9,8 @@ function initConstruct(){
     textVariable = document.getElementById("forminput").value;
     textArray = textVariable.split("\n");
     dropdownSelected = document.getElementById("defaultdropdown").value
+    console.log(textArray)
+    console.log(dropdownSelected)
     if (dropdownSelected === "english"){
         dropdownEnglish();
         constructBlooket();
@@ -19,6 +21,7 @@ function initConstruct(){
 }
 
 function dropdownNone(){
+    console.log("We are in dropdown none")
     //fills the question and answer arrays
     for (i=0; i<textArray.length; i++){
         if(i%2 === 0){
@@ -27,17 +30,21 @@ function dropdownNone(){
             answerArray.push(textArray[i])
         }
     }
+    console.log(questionArray)
+    console.log(answerArray)
 }
 
 function dropdownEnglish(){
+    console.log("We are in english")
     let apiCall;
     let apiResponse;
     for (i=0; i<textArray.length; i++){
         questionArray.push(textArray[i])
         apiCall = fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + textArray[i])
         apiCall.then(response => apiResponse = response);
+        console.log(apiCall)
         let defineArray = [];
-        definArray = [];
+        defineArray = [];
         let definition;
         getDefinitions();
         function getDefinitions(){
@@ -46,6 +53,8 @@ function dropdownEnglish(){
             }
             definition = defineArray[0]
             answerArray.push(definition);
+            console.log(questionArray)
+            console.log(answerArray)
         }
     }
 }
