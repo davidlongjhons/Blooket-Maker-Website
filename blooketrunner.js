@@ -1,63 +1,75 @@
-let dropdownSelected;
-let textVariable = "";
-let questionArray = [];
-let answerArray = [];
-let textArray;
+
 function initConstruct(){
+    let badArray = [];
+    let fileNameInput;
+    fileNameInput = document.getElementById("filenameinput").value
+    let dropdownSelected;
+    let textVariable = "";
+    let questionArray = [];
+    let answerArray = [];
+    let textArray;
+    const forminput = document.getElementById("forminput"); 
     answerArray = [];
     questionArray = [];
-    textVariable = document.getElementById("forminput").value;
+    textVariable = forminput.value;
     textArray = textVariable.split("\n");
+    for (let i = 0; i<textArray.length; i++){
+        if (textArray[i].trim()  === ""){
+            badArray.push(textArray.splice(i,1)[0]);
+            i--;
+        }
+    }
+    console.log(badArray)
     dropdownSelected = document.getElementById("defaultdropdown").value
-    console.log(textArray)
-    console.log(dropdownSelected)
     if (dropdownSelected === "english"){
         dropdownEnglish();
-        constructBlooket();
     } else if (dropdownSelected === "none") {
         dropdownNone();
         constructBlooket();
     }
-}
+
 
 function dropdownNone(){
-    console.log("We are in dropdown none")
+    let question;
+    let answer;
     //fills the question and answer arrays
     for (i=0; i<textArray.length; i++){
         if(i%2 === 0){
+            question = '"'.concat(textArray[i], '"')
             questionArray.push(textArray[i]);
         } else {
+            answer = '"'.concat(textArray[i], '"')
             answerArray.push(textArray[i])
         }
     }
-    console.log(questionArray)
-    console.log(answerArray)
 }
 
-function dropdownEnglish(){
-    console.log("We are in english")
-    let apiCall;
-    let apiResponse;
-    for (i=0; i<textArray.length; i++){
-        questionArray.push(textArray[i])
-        apiCall = fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + textArray[i])
-        apiCall.then(response => apiResponse = response);
-        console.log(apiCall)
-        let defineArray = [];
-        defineArray = [];
-        let definition;
-        getDefinitions();
-        function getDefinitions(){
-            for (let i = 0; i<apiCall[0]["meanings"].length; i++){
-                defineArray.push(apiResponse[0]["meanings"][i]["definitions"][0]["definition"])
-            }
-            definition = defineArray[0]
-            answerArray.push(definition);
-            console.log(questionArray)
-            console.log(answerArray)
-        }
+async function dropdownEnglish() {
+    let question;
+    let answer;
+    for (i=0; i<textArray.length;i++){
+        question = '"'.concat(textArray[i], '"')
+        questionArray.push(question)
     }
-}
+    const apiCalls = textArray.map((text) =>
+      fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + text)
+    );
+    try {
+      const apiResponses = await Promise.all(apiCalls);
+      const data = await Promise.all(apiResponses.map((response) => response.json()));
+      for (let i = 0; i < data.length; i++) {
+        let defineArray = [];
+        for (let j = 0; j < data[i][0]["meanings"].length; j++) {
+          defineArray.push(data[i][0]["meanings"][j]["definitions"][0]["definition"]);
+        }
+        answer = '"'.concat(defineArray[0], '"')
+        answerArray.push(answer);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    constructBlooket();
+  }
 
 function constructBlooket(){
     let currentQuestion;
@@ -78,12 +90,12 @@ function constructBlooket(){
         finalQuestionAnswer.push(finalQA)
     }
     //where we put the csv on the screen
-    finalQuestionAnswer.unshift('"Blooket' +"<br>" + 'Import Template",,,,,,,' + "<br>" +  'Question #,Question Text,Answer 1,Answer 2,"Answer 3' + "<br>" + '(Optional)","Answer 4' + "<br>" + '(Optional)","Time Limit (sec)' + "<br>" + '(Max: 300 seconds)","Correct Answer(s)' + "<br>" + '(Only include Answer #)"' + "<br>")
+    finalQuestionAnswer.unshift('"Blooket' +"\n" + 'Import Template",,,,,,,' + "\n" +  'Question #,Question Text,Answer 1,Answer 2,"Answer 3' + "\n" + '(Optional)","Answer 4' + "\n" + '(Optional)","Time Limit (sec)' + "\n" + '(Max: 300 seconds)","Correct Answer(s)' + "\n" + '(Only include Answer #)"' + "\n")
     finalQuestionAnswer = finalQuestionAnswer.join("")
     document.getElementById("outputarea").innerText = finalQuestionAnswer;
     const csvBlob = new Blob([finalQuestionAnswer], {type:"text/csv"});
     const downloadLink = document.createElement("a");
-    downloadLink.download = "myCSVFile.csv";
+    downloadLink.download = fileNameInput + ".csv";
     downloadLink.href = URL.createObjectURL(csvBlob);
     downloadLink.dataset.downloadurl = ["text/csv", downloadLink.download, downloadLink.href].join(":");
     document.body.appendChild(downloadLink);
@@ -106,9 +118,10 @@ function constructBlooket(){
     //function to add a new question
     function makeQuestion(questionText, correctAnswer, wrongOne, wrongTwo, wrongThree){
         questionNumber += 1;
-        finalQA = questionNumber + comma + questionText + comma + correctAnswer + comma + wrongOne + comma + wrongTwo + comma + wrongThree + comma + "20,1" + "<br>"
+        finalQA = questionNumber + comma + questionText + comma + correctAnswer + comma + wrongOne + comma + wrongTwo + comma + wrongThree + comma + "20,1" + "\n"
     }
     function randNum() {
         return Math.floor(Math.random() * questionArray.length)
     }
+}
 }
