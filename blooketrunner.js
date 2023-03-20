@@ -58,11 +58,23 @@ async function dropdownEnglish() {
       const apiResponses = await Promise.all(apiCalls);
       const data = await Promise.all(apiResponses.map((response) => response.json()));
       for (let i = 0; i < data.length; i++) {
+        answer = null;
         let defineArray = [];
         for (let j = 0; j < data[i][0]["meanings"].length; j++) {
           defineArray.push(data[i][0]["meanings"][j]["definitions"][0]["definition"]);
         }
-        answer = '"'.concat(defineArray[0], '"')
+        if (typeof defineArray[0].indexOf('"') !== number){
+            answer = '"'.concat(defineArray[0], '"')
+        } else {
+            for(i = 0; i < defineArray.length; i++){
+                if (typeof defineArray[i].indexOf('"') !== number){
+                    answer = '"'.concat(defineArray[i], '"')
+                }
+            }
+        }
+        if (!answer){
+            new Error("There was an issue, these words cannot be computed")
+        }
         answerArray.push(answer);
       }
     } catch (error) {
